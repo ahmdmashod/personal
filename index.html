@@ -1,0 +1,764 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Daily Tools — All in One</title>
+
+  <!-- Lucide icons (static font) -->
+  <link rel="stylesheet" href="https://unpkg.com/lucide-static@latest/font/lucide.css" />
+
+  <style>
+    :root{
+      --bg:#f8fafc; --panel:#ffffff; --muted:#64748b; --text:#0f172a;
+      --shadow: 0 10px 28px rgba(2,6,23,.08); --radius:14px;
+      --accent: #2563eb;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+      background: linear-gradient(180deg,#f8fafc 0%, #eef2f7 100%);
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    header{
+      position:sticky; top:0; z-index:40;
+      background: rgba(255,255,255,0.6);
+      backdrop-filter: blur(6px);
+      border-bottom: 1px solid rgba(15,23,42,0.06);
+    }
+    .wrap{max-width:1200px; margin:0 auto; padding:14px 16px}
+    .topbar{display:flex; gap:12px; align-items:center; justify-content:space-between}
+    .brand{display:flex; gap:10px; align-items:center}
+    h1{font-size:18px; margin:0; font-weight:700}
+    .small{font-size:13px; color:var(--muted)}
+
+    /* HOME GRID */
+    main#home{padding:18px}
+    .grid{
+      display:grid; gap:14px;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+    }
+    @media(min-width:740px){ .grid{ grid-template-columns: repeat(3, minmax(0,1fr)); } }
+    @media(min-width:1024px){ .grid{ grid-template-columns: repeat(4, minmax(0,1fr)); } }
+
+    .card{
+      background:var(--panel);
+      border-radius:var(--radius);
+      padding:18px;
+      display:flex; flex-direction:column; gap:10px; align-items:center; text-align:center;
+      box-shadow:var(--shadow);
+      border:1px solid rgba(15,23,42,0.04);
+      cursor:pointer; transition: transform .12s ease, box-shadow .12s ease;
+    }
+    .card:hover{ transform: translateY(-6px); box-shadow: 0 18px 40px rgba(2,6,23,.08) }
+    .card .icon{ width:110px; height:110px; display:grid; place-items:center; border-radius:22px; background:linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0.98)); box-shadow: 0 6px 18px rgba(2,6,23,.05); }
+    .card .icon i{ font-size:56px; color:var(--text); opacity:.95 }
+    .card h3{ margin:0; font-size:16px }
+    .card p{ margin:0; font-size:13px; color:var(--muted) }
+
+    /* Light color accents for cards (backgrounds are pale) */
+    .c-gray .icon{ background: linear-gradient(180deg,#eef2ff,#ffffff) }
+    .c-orange .icon{ background: linear-gradient(180deg,#fff7ed,#fffdf7) }
+    .c-black .icon{ background: linear-gradient(180deg,#e6eef6,#ffffff) }
+    .c-red .icon{ background: linear-gradient(180deg,#fff1f2,#fffdfd) }
+    .c-green .icon{ background: linear-gradient(180deg,#f0fdf4,#ffffff) }
+    .c-blue .icon{ background: linear-gradient(180deg,#eff6ff,#ffffff) }
+    .c-purple .icon{ background: linear-gradient(180deg,#f5f3ff,#ffffff) }
+    .c-teal .icon{ background: linear-gradient(180deg,#ecfeff,#ffffff) }
+    .c-amber .icon{ background: linear-gradient(180deg,#fff8ed,#ffffff) }
+    .c-pink .icon{ background: linear-gradient(180deg,#fff1f9,#ffffff) }
+
+    /* TOOL SHELL */
+    .tool{ display:none; padding:20px; max-width:1100px; margin: 8px auto 60px }
+    .tool.active{ display:block; animation: fade .14s ease }
+    @keyframes fade{ from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none} }
+
+    .tool .head{ display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px }
+    .back{ background:#ffffff; border:1px solid rgba(15,23,42,.06); padding:10px 12px; border-radius:10px; cursor:pointer; box-shadow:var(--shadow) }
+
+    .panel{ background:var(--panel); border-radius:12px; padding:14px; border:1px solid rgba(15,23,42,.04); box-shadow:var(--shadow) }
+
+    /* Calculator */
+    .calc-display{ width:100%; padding:14px; font-size:28px; border-radius:10px; border:1px solid rgba(15,23,42,.04); background:#ffffff; text-align:right }
+    .keys{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:12px }
+    .key{ padding:14px; font-size:18px; border-radius:10px; border:none; background:#f1f5f9; cursor:pointer }
+    .key.op{ background:#e6fffa }
+    .key.eq{ background: linear-gradient(135deg,#34d399,#10b981); color:#04210b; font-weight:700 }
+
+    /* Timer / Stopwatch / Alarms / To-do / Notes */
+    .controls{ display:flex; gap:10px; flex-wrap:wrap; align-items:center }
+    .controls input, .controls select, .controls button{ padding:10px 12px; border-radius:10px; border:1px solid rgba(15,23,42,.06); background:#fff }
+    .progress{ height:10px; background:#e6eef8; border-radius:999px; overflow:hidden }
+    .bar{ height:100%; width:0; background:linear-gradient(90deg,#60a5fa,#2563eb); }
+
+    .laps{ max-height:220px; overflow:auto; margin-top:10px; padding:8px; border-radius:8px; background:#fff; border:1px solid rgba(15,23,42,.04) }
+    .alarm-list{ display:flex; flex-direction:column; gap:10px; margin-top:10px }
+    .alarm-row{ display:flex; justify-content:space-between; gap:10px; align-items:center; padding:10px; border-radius:8px; background:#fff; border:1px solid rgba(15,23,42,.04) }
+
+    .todo-list{ display:flex; flex-direction:column; gap:8px; margin-top:10px; max-height:260px; overflow:auto }
+    .todo{ display:flex; gap:10px; align-items:center; padding:10px; background:#fff; border-radius:8px; border:1px solid rgba(15,23,42,.04) }
+
+    .notes-area{ width:100%; min-height:220px; padding:12px; border-radius:10px; border:1px solid rgba(15,23,42,.04); background:#fff }
+
+    .uc-row{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px }
+    @media(max-width:640px){ .uc-row{ grid-template-columns: 1fr } }
+
+    .cc-row{ display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:10px }
+    @media(max-width:800px){ .cc-row{ grid-template-columns: 1fr 1fr } }
+
+    .wc-list{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px; margin-top:8px }
+    .wc-card{ background:#fff; padding:10px; border-radius:10px; border:1px solid rgba(15,23,42,.04) }
+
+    .muted{ color:var(--muted); font-size:13px }
+
+    footer{ text-align:center; color:var(--muted); font-size:13px; padding:12px 0 30px }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap topbar">
+      <div class="brand">
+        <h1>🧰 Daily Tools</h1>
+        <div class="small muted">All tools in one file — mobile friendly</div>
+      </div>
+      <div>
+        <button class="back" onclick="goHome()">🏠 Home</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HOME -->
+  <main id="home" class="wrap">
+    <h2 style="margin:6px 0 12px">Choose a tool</h2>
+    <div class="grid">
+      <div class="card c-gray" data-open="tool-calc"><div class="icon"><i class="lucide lucide-calculator"></i></div><h3>Calculator</h3><p class="muted">Quick math</p></div>
+      <div class="card c-orange" data-open="tool-timer"><div class="icon"><i class="lucide lucide-hourglass"></i></div><h3>Timer</h3><p class="muted">Countdown</p></div>
+      <div class="card c-black" data-open="tool-stopwatch"><div class="icon"><i class="lucide lucide-clock"></i></div><h3>Stopwatch</h3><p class="muted">Laps</p></div>
+      <div class="card c-red" data-open="tool-alarms"><div class="icon"><i class="lucide lucide-bell"></i></div><h3>Alarms</h3><p class="muted">Daily alerts</p></div>
+
+      <div class="card c-green" data-open="tool-todo"><div class="icon"><i class="lucide lucide-list-todo"></i></div><h3>To-Do</h3><p class="muted">Tasks</p></div>
+      <div class="card c-blue" data-open="tool-notes"><div class="icon"><i class="lucide lucide-notebook-text"></i></div><h3>Notes</h3><p class="muted">Save locally</p></div>
+      <div class="card c-teal" data-open="tool-unit"><div class="icon"><i class="lucide lucide-ruler"></i></div><h3>Unit Converter</h3><p class="muted">Length • Weight • Temp</p></div>
+      <div class="card c-amber" data-open="tool-currency"><div class="icon"><i class="lucide lucide-coins"></i></div><h3>Currency</h3><p class="muted">Live rates</p></div>
+
+      <div class="card c-purple" data-open="tool-worldclock"><div class="icon"><i class="lucide lucide-globe"></i></div><h3>World Clock</h3><p class="muted">Many cities live</p></div>
+      <div class="card c-pink" data-open="tool-unit"><div class="icon"><i class="lucide lucide-repeat"></i></div><h3>More Tools</h3><p class="muted">(expandable)</p></div>
+    </div>
+  </main>
+
+  <!-- TOOLS -->
+
+  <!-- CALCULATOR -->
+  <section id="tool-calc" class="tool">
+    <div class="head">
+      <div>
+        <h2><i class="lucide lucide-calculator"></i> Calculator</h2>
+        <div class="muted" style="margin-top:6px">Keyboard: 0-9 + - * / % Enter</div>
+      </div>
+      <button class="back" data-home>⬅ Back</button>
+    </div>
+
+    <div class="panel">
+      <div style="padding:6px">
+        <input id="calcDisp" class="calc-display" readonly value="0" />
+        <div class="keys" id="calcKeys">
+          <button class="key" data-k="C">C</button>
+          <button class="key" data-k="DEL">DEL</button>
+          <button class="key op" data-k="%">%</button>
+          <button class="key op" data-k="/">÷</button>
+
+          <button class="key" data-k="7">7</button>
+          <button class="key" data-k="8">8</button>
+          <button class="key" data-k="9">9</button>
+          <button class="key op" data-k="*">×</button>
+
+          <button class="key" data-k="4">4</button>
+          <button class="key" data-k="5">5</button>
+          <button class="key" data-k="6">6</button>
+          <button class="key op" data-k="-">−</button>
+
+          <button class="key" data-k="1">1</button>
+          <button class="key" data-k="2">2</button>
+          <button class="key" data-k="3">3</button>
+          <button class="key op" data-k="+">+</button>
+
+          <button class="key wide" data-k="0" style="grid-column: span 2">0</button>
+          <button class="key" data-k=".">.</button>
+          <button class="key eq" data-k="=">=</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIMER -->
+  <section id="tool-timer" class="tool">
+    <div class="head">
+      <h2><i class="lucide lucide-hourglass"></i> Countdown Timer</h2>
+      <button class="back" data-home>⬅ Back</button>
+    </div>
+    <div class="panel">
+      <div class="controls">
+        <input type="number" id="tMin" placeholder="Min" min="0" style="width:110px" value="0" />
+        <input type="number" id="tSec" placeholder="Sec" min="0" max="59" style="width:110px" value="30" />
+        <button class="back" id="tStart">Start</button>
+        <button class="back" id="tPause">Pause</button>
+        <button class="back" id="tReset">Reset</button>
+      </div>
+      <h2 id="tRead" style="margin-top:12px">00:30</h2>
+      <div class="progress"><div class="bar" id="tBar"></div></div>
+      <div class="muted" id="tMsg" style="margin-top:8px">—</div>
+    </div>
+  </section>
+
+  <!-- STOPWATCH -->
+  <section id="tool-stopwatch" class="tool">
+    <div class="head">
+      <h2><i class="lucide lucide-clock"></i> Stopwatch</h2>
+      <button class="back" data-home>⬅ Back</button>
+    </div>
+    <div class="panel">
+      <div class="controls">
+        <button class="back" id="swStart">Start</button>
+        <button class="back" id="swLap">Lap</button>
+        <button class="back" id="swReset">Reset</button>
+      </div>
+      <h2 id="swOut" style="margin-top:12px">00:00.00</h2>
+      <div class="laps" id="swLaps"></div>
+    </div>
+  </section>
+
+  <!-- ALARMS -->
+  <section id="tool-alarms" class="tool">
+    <div class="head">
+      <h2><i class="lucide lucide-bell"></i> Alarms</h2>
+      <button class="back" data-home>⬅ Back</button>
+    </div>
+    <div class="panel">
+      <div class="controls">
+        <input type="time" id="alTime" />
+        <input type="text" id="alLabel" placeholder="Label (e.g., Tea break)" />
+        <select id="alRepeat">
+          <option value="once">Once</option>
+          <option value="daily" selected>Daily</option>
+          <option value="weekdays">Weekdays</option>
+        </select>
+        <button class="back" id="alAdd">Add Alarm</button>
+      </div>
+      <div class="alarm-list" id="alList"></div>
+      <div class="muted" style="margin-top:8px">Works while this tab is open. Allow notifications for pop-ups.</div>
+    </div>
+  </section>
+
+  <!-- TO-DO -->
+  <section id="tool-todo" class="tool">
+    <div class="head">
+      <h2><i class="lucide lucide-list-todo"></i> To-Do</h2>
+      <button class="back" data-home>⬅ Back</button>
+    </div>
+    <div class="panel">
+      <div style="display:flex; gap:10px">
+        <input id="tdText" placeholder="Add a task…" style="flex:1" />
+        <button class="back" id="tdAdd">Add</button>
+      </div>
+      <div class="todo-list" id="tdList"></div>
+    </div>
+  </section>
+
+  <!-- NOTES -->
+  <section id="tool-notes" class="tool">
+    <div class="head">
+      <h2><i class="lucide lucide-notebook-text"></i> Notes</h2>
+      <button class="back" data-home>⬅ Back</button>
+    </div>
+    <div class="panel">
+      <textarea id="notesArea" class="notes-area" placeholder="Write your note here…"></textarea>
+      <div style="display:flex; gap:10px; margin-top:8px; align-items:center">
+        <button class="back" id="notesSave">Save</button>
+        <div class="muted" id="notesInfo">Saved locally in your browser.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- UNIT CONVERTER -->
+  <section id="tool-unit" class="tool">
+    <div class="head">
+      <h2><i class="lucide lucide-ruler"></i> Unit Converter</h2>
+      <button class="back" data-home>⬅ Back</button>
+    </div>
+    <div class="panel">
+      <h3 style="margin:6px 0">Length</h3>
+      <div class="uc-row">
+        <input type="number" id="lenFromVal" placeholder="Value" />
+        <select id="lenFromUnit">
+          <option>m</option><option>cm</option><option>mm</option><option>km</option>
+          <option>in</option><option>ft</option><option>yd</option><option>mi</option>
+        </select>
+        <div style="display:flex; align-items:center; gap:8px"><strong id="lenToVal">0</strong><span id="lenToUnit">cm</span></div>
+      </div>
+
+      <div style="height:10px"></div>
+
+      <h3 style="margin:6px 0">Weight</h3>
+      <div class="uc-row">
+        <input type="number" id="wFromVal" placeholder="Value" />
+        <select id="wFromUnit"><option>kg</option><option>g</option><option>lb</option><option>oz</option></select>
+        <div style="display:flex; align-items:center; gap:8px"><strong id="wToVal">0</strong><span id="wToUnit">g</span></div>
+      </div>
+
+      <div style="height:10px"></div>
+
+      <h3 style="margin:6px 0">Temperature</h3>
+      <div class="uc-row">
+        <input type="number" id="tFromVal" placeholder="Value" />
+        <select id="tFromUnit"><option>°C</option><option>°F</option><option>K</option></select>
+        <div style="display:flex; align-items:center; gap:8px"><strong id="tToVal">0</strong><span id="tToUnit">°F</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CURRENCY (LIVE) -->
+  <section id="tool-currency" class="tool">
+    <div class="head">
+      <h2><i class="lucide lucide-coins"></i> Currency Converter (Live)</h2>
+      <button class="back" data-home>⬅ Back</button>
+    </div>
+    <div class="panel">
+      <div class="cc-row">
+        <input type="number" id="ccAmount" placeholder="Amount" value="1" />
+        <select id="ccFrom"></select>
+        <select id="ccTo"></select>
+        <div style="display:flex; align-items:center; gap:8px"><button class="back" id="ccSwap">Swap</button></div>
+      </div>
+      <h2 id="ccResult" style="margin-top:12px">—</h2>
+      <div class="muted" id="ccInfo" style="margin-top:6px">Loading live rates…</div>
+    </div>
+  </section>
+
+  <!-- WORLD CLOCK -->
+  <section id="tool-worldclock" class="tool">
+    <div class="head">
+      <h2><i class="lucide lucide-globe"></i> World Clock</h2>
+      <button class="back" data-home>⬅ Back</button>
+    </div>
+    <div class="panel">
+      <div id="wcList" class="wc-list"></div>
+      <div class="muted" style="margin-top:10px">Auto-updates every second (based on your device clock).</div>
+    </div>
+  </section>
+
+  <footer class="wrap">
+    <div class="muted">Save as <strong>index.html</strong> and open in your browser. Currency rates via exchangerate.host</div>
+  </footer>
+
+  <!-- App script -->
+  <script>
+  // ---- Nav: show/hide tools ----
+  (function(){
+    document.querySelectorAll('[data-open]').forEach(el=>{
+      el.addEventListener('click', ()=> {
+        const id = el.getAttribute('data-open');
+        document.getElementById('home').style.display='none';
+        document.querySelectorAll('.tool').forEach(t => t.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        window.scrollTo({top:0, behavior:'smooth'});
+      });
+    });
+    document.querySelectorAll('[data-home]').forEach(b=>{
+      b.addEventListener('click', ()=> {
+        document.querySelectorAll('.tool').forEach(t => t.classList.remove('active'));
+        document.getElementById('home').style.display='block';
+        window.scrollTo({top:0, behavior:'smooth'});
+      });
+    });
+  })();
+
+  // ---- Icons activation (lucide font already loaded) - fallback if needed ----
+  try{ /* lucide font icons appear automatically via CSS font */ } catch(e){}
+
+  // ---- CALCULATOR ----
+  (function(){
+    const disp = document.getElementById('calcDisp');
+    const keys = document.querySelectorAll('#calcKeys .key');
+    let expr = '0';
+    function set(v){ expr = String(v); disp.value = expr; }
+    function append(ch){
+      if(expr === '0' && /[0-9.]/.test(ch)) set(ch);
+      else set(expr + ch);
+    }
+    function safeEval(s){
+      if(!/^[-+*/().% 0-9]+$/.test(s)) throw new Error('Invalid');
+      const safe = s.replace(/%/g,'*0.01');
+      return Function('return ('+safe+')')();
+    }
+    function press(k){
+      if(k === 'C') return set('0');
+      if(k === 'DEL') return set(expr.length>1 ? expr.slice(0,-1) : '0');
+      if(k === '='){ try{ set(String(safeEval(expr))); } catch{ set('0'); } return; }
+      append(k);
+    }
+    keys.forEach(b => b.addEventListener('click', ()=> press(b.dataset.k)));
+    window.addEventListener('keydown', e=>{
+      if(!document.getElementById('tool-calc').classList.contains('active')) return;
+      const map = { 'Enter':'=', 'Backspace':'DEL' };
+      if(/[0-9]/.test(e.key)) press(e.key);
+      else if("+-*/.%".includes(e.key)) press(e.key);
+      else if(map[e.key]){ e.preventDefault(); press(map[e.key]); }
+    });
+    set('0');
+  })();
+
+  // ---- TIMER ----
+  (function(){
+    const minI = document.getElementById('tMin');
+    const secI = document.getElementById('tSec');
+    const startBtn = document.getElementById('tStart');
+    const pauseBtn = document.getElementById('tPause');
+    const resetBtn = document.getElementById('tReset');
+    const readout = document.getElementById('tRead');
+    const bar = document.getElementById('tBar');
+    const msg = document.getElementById('tMsg');
+
+    let total = 30, left = 30, running = false, t0 = 0, raf = 0;
+    function fmt(s){ const m = Math.floor(s/60), r = s % 60; return `${String(m).padStart(2,'0')}:${String(r).padStart(2,'0')}`; }
+    function update(now){
+      if(!running) return;
+      const elapsed = Math.floor((now - t0)/1000);
+      const newLeft = Math.max(0, total - elapsed);
+      if(newLeft !== left){
+        left = newLeft;
+        readout.textContent = fmt(left);
+        bar.style.width = ((total - left)/total*100)+'%';
+      }
+      if(left <= 0){
+        running = false;
+        try{ new Notification('Timer finished'); }catch(e){}
+        msg.textContent = 'Done!';
+        return;
+      }
+      raf = requestAnimationFrame(update);
+    }
+    startBtn.addEventListener('click', ()=>{
+      total = Math.max(0, (parseInt(minI.value||0) * 60) + parseInt(secI.value||0));
+      if(!total){ msg.textContent = 'Set time first'; return; }
+      left = total;
+      t0 = performance.now();
+      running = true;
+      msg.textContent = 'Running…';
+      bar.style.width = '0%';
+      cancelAnimationFrame(raf); raf = requestAnimationFrame(update);
+    });
+    pauseBtn.addEventListener('click', ()=>{ if(!running) return; running = false; total = left; msg.textContent = 'Paused'; });
+    resetBtn.addEventListener('click', ()=>{ running = false; left = total = (parseInt(minI.value||0)*60 + parseInt(secI.value||0)) || 0; readout.textContent = fmt(left); bar.style.width='0%'; msg.textContent = '—'; cancelAnimationFrame(raf); });
+    readout.textContent = fmt(left);
+  })();
+
+  // ---- STOPWATCH ----
+  (function(){
+    const startBtn = document.getElementById('swStart');
+    const lapBtn = document.getElementById('swLap');
+    const resetBtn = document.getElementById('swReset');
+    const out = document.getElementById('swOut');
+    const list = document.getElementById('swLaps');
+
+    let running=false, t0=0, acc=0, raf=0;
+    function fmt(ms){
+      const cs = Math.floor((ms%1000)/10);
+      const s = Math.floor(ms/1000)%60;
+      const m = Math.floor(ms/60000);
+      return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(cs).padStart(2,'0')}`;
+    }
+    function tick(now){
+      if(!running) return;
+      out.textContent = fmt(acc + (now - t0));
+      raf = requestAnimationFrame(tick);
+    }
+    startBtn.addEventListener('click', ()=>{
+      if(running){ running=false; acc += performance.now()-t0; startBtn.textContent='Start'; cancelAnimationFrame(raf); }
+      else{ running=true; t0 = performance.now(); startBtn.textContent='Pause'; raf = requestAnimationFrame(tick); }
+    });
+    lapBtn.addEventListener('click', ()=>{
+      if(out.textContent === '00:00.00') return;
+      const d = document.createElement('div'); d.textContent = `Lap ${list.children.length+1}: ${out.textContent}`;
+      list.prepend(d);
+    });
+    resetBtn.addEventListener('click', ()=>{
+      running=false; acc=0; out.textContent='00:00.00'; list.innerHTML=''; startBtn.textContent='Start'; cancelAnimationFrame(raf);
+    });
+  })();
+
+  // ---- ALARMS ----
+  (function(){
+    const timeI = document.getElementById('alTime');
+    const labelI = document.getElementById('alLabel');
+    const repeatS = document.getElementById('alRepeat');
+    const addBtn = document.getElementById('alAdd');
+    const list = document.getElementById('alList');
+
+    let alarms = JSON.parse(localStorage.getItem('alarms') || '[]');
+    function save(){ localStorage.setItem('alarms', JSON.stringify(alarms)); }
+    function render(){
+      list.innerHTML = '';
+      if(!alarms.length){
+        const p=document.createElement('p'); p.className='muted'; p.textContent='No alarms yet.'; list.appendChild(p); return;
+      }
+      alarms.forEach((a,i)=>{
+        const row = document.createElement('div'); row.className='alarm-row';
+        const left = document.createElement('div');
+        const t = document.createElement('strong'); t.textContent = a.time + (a.repeat!=='once' ? ` • ${a.repeat}` : '');
+        const s = document.createElement('div'); s.className='muted'; s.textContent = a.label || '—';
+        left.appendChild(t); left.appendChild(s);
+        const right = document.createElement('div'); right.style.display='flex'; right.style.gap='8px'; const ch = document.createElement('input'); ch.type='checkbox'; ch.checked = a.enabled !== false;
+        const del = document.createElement('button'); del.className='back'; del.textContent='Delete';
+        ch.onchange = ()=>{ a.enabled = ch.checked; save(); };
+        del.onclick = ()=>{ alarms.splice(i,1); save(); render(); };
+        right.appendChild(ch); right.appendChild(del);
+        row.appendChild(left); row.appendChild(right);
+        list.appendChild(row);
+      });
+    }
+    addBtn.addEventListener('click', ()=>{
+      if(!timeI.value) return;
+      alarms.push({ time: timeI.value, label: labelI.value.trim(), repeat: repeatS.value, enabled: true });
+      timeI.value=''; labelI.value=''; repeatS.value='daily';
+      save(); render();
+    });
+
+    setInterval(()=>{
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2,'0');
+      const mm = String(now.getMinutes()).padStart(2,'0');
+      const ss = now.getSeconds();
+      alarms.forEach(a=>{
+        if(a.enabled === false) return;
+        if(a.time === `${hh}:${mm}` && ss === 0){
+          if(a.repeat === 'weekdays'){
+            const d = now.getDay();
+            if(d === 0 || d === 6) return;
+          }
+          try{ new Notification('Alarm', { body: a.label || 'Time!' }); } catch(e){}
+          if(a.repeat === 'once') a.enabled = false;
+          save(); render();
+        }
+      });
+    }, 1000);
+
+    render();
+  })();
+
+  // ---- TO-DO ----
+  (function(){
+    const input = document.getElementById('tdText');
+    const add = document.getElementById('tdAdd');
+    const list = document.getElementById('tdList');
+    let todos = JSON.parse(localStorage.getItem('todos') || '[]');
+    function save(){ localStorage.setItem('todos', JSON.stringify(todos)); }
+    function render(){
+      list.innerHTML = '';
+      todos.forEach((t,i)=>{
+        const row = document.createElement('div'); row.className='todo';
+        const cb = document.createElement('input'); cb.type='checkbox'; cb.checked = !!t.done;
+        const span = document.createElement('div'); span.textContent = t.text;
+        const del = document.createElement('button'); del.className='back'; del.textContent='Delete';
+        cb.onchange = ()=>{ t.done = cb.checked; save(); render(); };
+        del.onclick = ()=>{ todos.splice(i,1); save(); render(); };
+        row.appendChild(cb); row.appendChild(span); row.appendChild(del);
+        list.appendChild(row);
+      });
+    }
+    add.addEventListener('click', ()=>{
+      const txt = input.value.trim(); if(!txt) return;
+      todos.unshift({ text: txt, done: false }); input.value=''; save(); render();
+    });
+    input.addEventListener('keydown', e=>{ if(e.key === 'Enter') add.click(); });
+    render();
+  })();
+
+  // ---- NOTES ----
+  (function(){
+    const area = document.getElementById('notesArea');
+    const saveBtn = document.getElementById('notesSave');
+    const info = document.getElementById('notesInfo');
+    area.value = localStorage.getItem('notes') || '';
+    saveBtn.addEventListener('click', ()=> {
+      localStorage.setItem('notes', area.value);
+      info.textContent = 'Saved!';
+      setTimeout(()=> info.textContent = 'Saved locally in your browser.', 1200);
+    });
+  })();
+
+  // ---- UNIT CONVERTER ----
+  (function(){
+    const lenMap = { m:1, cm:0.01, mm:0.001, km:1000, in:0.0254, ft:0.3048, yd:0.9144, mi:1609.344 };
+    const lenFromVal = document.getElementById('lenFromVal');
+    const lenFromUnit = document.getElementById('lenFromUnit');
+    const lenToVal = document.getElementById('lenToVal');
+    const lenToUnit = document.getElementById('lenToUnit');
+
+    function updLen(){
+      const v = parseFloat(lenFromVal.value || 0);
+      const u = lenFromUnit.value;
+      const meters = v * lenMap[u];
+      const target = 'cm';
+      lenToUnit.textContent = target;
+      lenToVal.textContent = (meters / lenMap[target]).toFixed(4);
+    }
+    lenFromVal.oninput = lenFromUnit.onchange = updLen;
+    updLen();
+
+    const wMap = { kg:1, g:0.001, lb:0.45359237, oz:0.0283495231 };
+    const wFromVal = document.getElementById('wFromVal'), wFromUnit = document.getElementById('wFromUnit'), wToVal=document.getElementById('wToVal'), wToUnit=document.getElementById('wToUnit');
+    function updW(){
+      const v = parseFloat(wFromVal.value || 0);
+      const u = wFromUnit.value;
+      const kg = v * wMap[u];
+      const target = 'g';
+      wToUnit.textContent = target;
+      wToVal.textContent = (kg / wMap[target]).toFixed(4);
+    }
+    wFromVal.oninput = wFromUnit.onchange = updW;
+    updW();
+
+    const tFromVal = document.getElementById('tFromVal'), tFromUnit = document.getElementById('tFromUnit'), tToVal=document.getElementById('tToVal'), tToUnit=document.getElementById('tToUnit');
+    function updT(){
+      const v = parseFloat(tFromVal.value || 0);
+      const u = tFromUnit.value;
+      let c;
+      if(u === '°C') c = v;
+      else if(u === '°F') c = (v - 32) * 5/9;
+      else c = v - 273.15;
+      const f = c * 9/5 + 32;
+      tToUnit.textContent = '°F';
+      tToVal.textContent = f.toFixed(2);
+    }
+    tFromVal.oninput = tFromUnit.onchange = updT;
+    updT();
+  })();
+
+  // ---- CURRENCY (live via exchangerate.host) ----
+  (function(){
+    const AMT = document.getElementById('ccAmount'), FROM = document.getElementById('ccFrom'), TO = document.getElementById('ccTo'), RES = document.getElementById('ccResult'), INFO = document.getElementById('ccInfo'), SWAP = document.getElementById('ccSwap');
+    const CODES = ["USD","EUR","GBP","PKR","INR","AED","SAR","CNY","JPY","AUD","CAD","CHF","SEK","NOK","DKK","TRY","IDR","BDT","SGD","HKD","NZD","ZAR","EGP","QAR","BHD","KWD","MYR","THB","KRW","VND","PHP","NGN"];
+    CODES.forEach(c=>{
+      const o1 = document.createElement('option'); o1.value = o1.text = c; FROM.appendChild(o1);
+      const o2 = document.createElement('option'); o2.value = o2.text = c; TO.appendChild(o2);
+    });
+    FROM.value = 'USD'; TO.value = 'PKR';
+    let rates = null, base = 'USD', lastDate = null;
+    async function load(baseCode){
+      INFO.textContent = 'Loading live rates…';
+      try {
+        const url = `https://api.exchangerate.host/latest?base=${encodeURIComponent(baseCode)}`;
+        const r = await fetch(url);
+        const data = await r.json();
+        if(data && data.rates){
+          rates = data.rates; base = data.base || baseCode; lastDate = data.date || null;
+          INFO.textContent = `Base ${base} • Last update ${lastDate || '—'}`;
+          calc();
+        } else {
+          INFO.textContent = 'Unable to load rates';
+        }
+      } catch(e){
+        INFO.textContent = 'Error fetching rates';
+      }
+    }
+    function calc(){
+      if(!rates) return;
+      const amt = parseFloat(AMT.value || 0);
+      const from = FROM.value, to = TO.value;
+      // convert from->to via base
+      if(from === base){
+        const rate = rates[to]; if(!isFinite(rate)) { RES.textContent='Unavailable'; return; }
+        RES.textContent = `${amt} ${from} = ${(amt * rate).toFixed(2)} ${to}`;
+      } else {
+        const viaBase = 1/(rates[from] || NaN);
+        if(!isFinite(viaBase)) { RES.textContent='Unavailable'; return; }
+        const val = amt * viaBase * (rates[to] || NaN);
+        if(!isFinite(val)) { RES.textContent='Unavailable'; return; }
+        RES.textContent = `${amt} ${from} = ${val.toFixed(2)} ${to}`;
+      }
+    }
+    AMT.oninput = calc; FROM.onchange = ()=> load(FROM.value); TO.onchange = calc;
+    SWAP.addEventListener('click', ()=>{
+      const a = FROM.value; FROM.value = TO.value; TO.value = a; load(FROM.value);
+    });
+    load('USD');
+  })();
+
+  // ---- WORLD CLOCK (many cities) ----
+  (function(){
+    const list = document.getElementById('wcList');
+    const cities = [
+      {n:'Karachi', z:'Asia/Karachi'}, {n:'Lahore', z:'Asia/Karachi'}, {n:'Islamabad', z:'Asia/Karachi'},
+      {n:'Dubai', z:'Asia/Dubai'}, {n:'Doha', z:'Asia/Qatar'}, {n:'Riyadh', z:'Asia/Riyadh'},
+      {n:'Tehran', z:'Asia/Tehran'}, {n:'Istanbul', z:'Europe/Istanbul'}, {n:'Cairo', z:'Africa/Cairo'},
+      {n:'Johannesburg', z:'Africa/Johannesburg'}, {n:'London', z:'Europe/London'}, {n:'Paris', z:'Europe/Paris'},
+      {n:'Berlin', z:'Europe/Berlin'}, {n:'Madrid', z:'Europe/Madrid'}, {n:'Moscow', z:'Europe/Moscow'},
+      {n:'New York', z:'America/New_York'}, {n:'Toronto', z:'America/Toronto'}, {n:'Chicago', z:'America/Chicago'},
+      {n:'Los Angeles', z:'America/Los_Angeles'}, {n:'Mexico City', z:'America/Mexico_City'}, {n:'Sao Paulo', z:'America/Sao_Paulo'},
+      {n:'Buenos Aires', z:'America/Argentina/Buenos_Aires'}, {n:'Tokyo', z:'Asia/Tokyo'}, {n:'Seoul', z:'Asia/Seoul'},
+      {n:'Beijing', z:'Asia/Shanghai'}, {n:'Hong Kong', z:'Asia/Hong_Kong'}, {n:'Singapore', z:'Asia/Singapore'},
+      {n:'Bangkok', z:'Asia/Bangkok'}, {n:'Jakarta', z:'Asia/Jakarta'}, {n:'Sydney', z:'Australia/Sydney'},
+      {n:'Melbourne', z:'Australia/Melbourne'}, {n:'Wellington', z:'Pacific/Auckland'}, {n:'Kathmandu', z:'Asia/Kathmandu'},
+      {n:'Dhaka', z:'Asia/Dhaka'}, {n:'Colombo', z:'Asia/Colombo'}
+    ];
+    cities.forEach(c=>{
+      const card = document.createElement('div'); card.className = 'wc-card';
+      card.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;"><strong>${c.n}</strong><small class="muted">${c.z}</small></div><div id="t_${c.z.replace(/\\W/g,'_')}" style="font-weight:700; margin-top:6px">--:--:--</div>`;
+      list.appendChild(card);
+    });
+    function tick(){
+      const now = new Date();
+      cities.forEach(c=>{
+        try{
+          const s = new Intl.DateTimeFormat([], { hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false, timeZone: c.z }).format(now);
+          const id = `t_${c.z.replace(/\\W/g,'_')}`;
+          const el = document.getElementById(id); if(el) el.textContent = s;
+        }catch(e){}
+      });
+    }
+    tick(); setInterval(tick, 1000);
+  })();
+
+  // ---- Home navigation helpers ----
+  function goHome(){
+    document.querySelectorAll('.tool').forEach(t => t.classList.remove('active'));
+    document.getElementById('home').style.display = 'block';
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  // Wait for DOM loaded: wire card clicks and back buttons
+  document.addEventListener('DOMContentLoaded', ()=>{
+    document.querySelectorAll('.card').forEach(el=>{
+      el.addEventListener('click', ()=> {
+        const id = el.getAttribute('data-open');
+        if(!id) return;
+        document.getElementById('home').style.display='none';
+        document.querySelectorAll('.tool').forEach(t => t.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        window.scrollTo({top:0, behavior:'smooth'});
+      });
+    });
+    document.querySelectorAll('.back[data-home], .back[data-home]').forEach(b=>{
+      b.addEventListener('click', goHome);
+    });
+    // Also make small "Back" buttons inside tools work
+    document.querySelectorAll('.back').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        // buttons with data-home handled above; for others call goHome
+        if(btn.hasAttribute('data-home')) return;
+        goHome();
+      });
+    });
+    // Ask notification permission once (optional)
+    if('Notification' in window && Notification.permission !== 'granted') {
+      try{ Notification.requestPermission(); }catch(e){}
+    }
+  });
+  </script>
+</body>
+</html>
