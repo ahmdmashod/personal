@@ -1,5 +1,5 @@
 # todo typescript
 - [x] variables
-- [ ] data types
-- [ ] differece between const and let
-- [ ] console
+- [x] data types
+- [x] differece between const and let
+- [x] console
