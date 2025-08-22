@@ -26,7 +26,7 @@
    
   let age: number = 20;              //number
 
-  let isStudent: boolean = true;      // true/false
+  let isStudent: boolean = true;      // true/falses
   # 2 Objective type:
   - Array
   - Tuple
