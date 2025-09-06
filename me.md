@@ -1,5 +1,5 @@
 # Data type in typescript:
-  # define
+  # define:
      In TypeScript, a data type is a label that tells the compiler what kind of value a variable,
      function parameter, or return value can hold.
      It defines the shape and kind of data so TypeScript can check correctness before running the code.
