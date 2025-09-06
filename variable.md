@@ -1,4 +1,4 @@
-# variable:
+# variable
 In typescript, the variable is the named storage that can hold the value or data. the variable is just like the container for the values to save.(e.g.,number,bolean,etc).
 
 # variable declaring:
