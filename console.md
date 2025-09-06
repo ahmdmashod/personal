@@ -15,6 +15,6 @@ console.log("Hello,", name); // Hello, Alice
 
 - Methods include log, error, warn, info, table, and more.
 
-- Works the same in TypeScript as in JavaScript, but with type safety in TypeScript.
+- Works the same in TypeScript as in JavaScript, but with type safety in TypeScript
 
 - console.log() is daily use in debugging typescript
