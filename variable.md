@@ -6,7 +6,7 @@ In typescript, the variable is the named storage that can hold the value or data
 # Examle of variable with let:
 - let age: number = 25;
 # Example of variable with const:
-- const name: string = "Alex";
+- const name: string = Alex;
 # Example of variable with var:
 - var isStudent: boolean = true;
   
